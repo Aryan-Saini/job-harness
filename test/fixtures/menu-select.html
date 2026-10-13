@@ -1,0 +1,43 @@
+<!doctype html><html><body>
+<!-- BambooHR's select: a menu button over a hidden native select, its options a role=menu popup. -->
+<form>
+  <label for="city">City *</label><input id="city" required>
+  <div class="field">
+    <label for="fab-select1">Province<span aria-hidden="true"> *</span></label>
+    <div class="fab-Select">
+      <button type="button" id="toggle" aria-haspopup="true" aria-expanded="false" aria-label="Province –Select–"><div class="placeholder">–Select–</div></button>
+      <select id="fab-select1" name="state.value" required tabindex="-1" aria-hidden="true" style="opacity:0;width:0;height:0;position:absolute"><option value="" selected></option></select>
+    </div>
+  </div>
+  <div class="field">
+    <label for="fab-select2">Country<span aria-hidden="true"> *</span></label>
+    <div class="fab-Select">
+      <button type="button" aria-haspopup="true" aria-label="Country Canada"><div>Canada</div></button>
+      <select id="fab-select2" required tabindex="-1" aria-hidden="true" style="opacity:0;width:0;height:0;position:absolute"><option value="2" selected></option></select>
+    </div>
+  </div>
+  <div><button type="button" aria-haspopup="true">More actions</button></div>
+</form>
+<script>
+  const toggle = document.getElementById("toggle"), select = document.getElementById("fab-select1");
+  toggle.addEventListener("click", () => {
+    if (document.getElementById("menu")) return;
+    const menu = document.createElement("div");
+    menu.id = "menu";
+    menu.setAttribute("role", "menu");
+    for (const [v, name] of [["1", "Alberta"], ["2", "British Columbia"], ["9", "Ontario"]]) {
+      const item = document.createElement("div");
+      item.setAttribute("role", "menuitem");
+      item.innerHTML = "<div><div>" + name + "</div></div>";
+      item.addEventListener("click", () => {
+        select.innerHTML = '<option value="' + v + '" selected></option>';
+        toggle.querySelector("div").textContent = name;
+        menu.remove();
+      });
+      menu.appendChild(item);
+    }
+    document.body.appendChild(menu);
+  });
+  document.addEventListener("keydown", (e) => e.key === "Escape" && document.getElementById("menu")?.remove());
+</script>
+</body></html>

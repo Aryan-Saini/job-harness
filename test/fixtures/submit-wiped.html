@@ -1,0 +1,13 @@
+<!doctype html><html><body>
+<h1>Backend Engineer at Wipeco</h1>
+<!-- A React-style form that lost the programmatic fill: the first click wipes First Name and
+     rejects; a click with every box filled goes through. -->
+<form onsubmit="event.preventDefault(); window.submits = (window.submits || 0) + 1;
+  const fn = document.getElementById('fn'), err = document.getElementById('err');
+  if (window.submits === 1) { fn.value = ''; err.hidden = false; }
+  else if (fn.value) document.body.innerHTML = '<h1>Thanks for applying!</h1>';">
+  <label for="fn">First Name *</label><input id="fn" required>
+  <label for="em">Email *</label><input id="em" type="email" required>
+  <div id="err" role="alert" hidden>Missing entry for required field</div>
+  <button type="submit">Submit Application</button>
+</form></body></html>

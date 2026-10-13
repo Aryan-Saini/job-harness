@@ -1,0 +1,4 @@
+#!/bin/sh
+# Entry point. Put it on your PATH: ln -s "$PWD/bin/jh" ~/.local/bin/jh
+DIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+exec "$DIR/node_modules/.bin/tsx" "$DIR/src/cli.ts" "$@"

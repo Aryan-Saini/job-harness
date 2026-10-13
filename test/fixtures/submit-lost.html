@@ -1,0 +1,36 @@
+<!doctype html><html><body>
+<h1>Backend Engineer at Lostco</h1>
+<!-- Ashby-like: the form keeps answers in its own state, fed by input events and button clicks.
+     The first submit finds Email and the yes/no answer dropped from that state while the boxes
+     still show them, and lists them as missing. A submit with everything in state goes through. -->
+<form id="f">
+  <label for="fn">First Name *</label><input id="fn" required>
+  <label for="em">Email *</label><input id="em" type="email" required>
+  <div data-field-path="deg"><label>Do you have a college degree? *</label>
+    <div class="yesno"><button type="button" aria-pressed="false" data-option="yes">Yes</button><button type="button" aria-pressed="false" data-option="no">No</button></div>
+  </div>
+  <div id="err" role="alert" hidden></div>
+  <button type="submit">Submit Application</button>
+</form>
+<script>
+  const state = {};
+  for (const i of document.querySelectorAll("input")) i.addEventListener("input", () => (state[i.id] = i.value));
+  for (const b of document.querySelectorAll(".yesno button")) b.addEventListener("click", () => {
+    for (const x of document.querySelectorAll(".yesno button")) x.setAttribute("aria-pressed", String(x === b));
+    state.deg = b.dataset.option;
+  });
+  document.getElementById("f").addEventListener("submit", (e) => {
+    e.preventDefault();
+    window.submits = (window.submits || 0) + 1;
+    if (window.submits === 1) { delete state.em; delete state.deg; }
+    const missing = [["fn", "First Name"], ["em", "Email"], ["deg", "Do you have a college degree?"]].filter(([k]) => !state[k]).map(([, l]) => l);
+    const err = document.getElementById("err");
+    if (missing.length) {
+      err.hidden = false;
+      err.innerHTML = missing.map((m) => "<p>Missing entry for required field: " + m + "</p>").join("");
+      return;
+    }
+    document.body.innerHTML = "<h1>Thanks for applying!</h1>";
+  });
+</script>
+</body></html>

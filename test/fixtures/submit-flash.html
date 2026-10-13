@@ -1,0 +1,11 @@
+<!doctype html><html><body>
+<h1>Backend Engineer at Flashco</h1>
+<!-- The submit goes through, but a "required" error flashes for 2s before the thank-you. -->
+<form onsubmit="event.preventDefault(); window.submits = (window.submits || 0) + 1;
+  document.getElementById('err').hidden = false;
+  setTimeout(() => { document.body.innerHTML = '<h1>Your application for Backend Engineer has been received</h1>'; }, 2000)">
+  <label for="fn">First Name *</label><input id="fn" required>
+  <label for="em">Email *</label><input id="em" type="email" required>
+  <div id="err" role="alert" hidden>This field is required</div>
+  <button type="submit">Submit Application</button>
+</form></body></html>

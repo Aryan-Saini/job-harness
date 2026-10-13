@@ -1,0 +1,31 @@
+{
+  "firstName": "Jane",
+  "lastName": "Doe",
+  "pronouns": "she/her",
+  "email": "jane@example.com",
+  "phone": "555-123-4567",
+  "linkedin": "https://www.linkedin.com/in/janedoe",
+  "github": "https://github.com/janedoe",
+  "website": "",
+  "address": {
+    "street": "123 Main St",
+    "city": "Toronto",
+    "region": "Ontario",
+    "postalCode": "M5V 1A1",
+    "country": "Canada"
+  },
+  "education": {
+    "school": "University of Toronto",
+    "degree": "Bachelor of Science",
+    "major": "Computer Science",
+    "start": { "month": "September", "year": "2021" },
+    "end": { "month": "May", "year": "2025" }
+  },
+  "workAuthorization": {
+    "authorizedIn": ["Canada"],
+    "summary": "Canadian citizen. Would need sponsorship to work in the United States."
+  },
+  "yearsExperience": 2,
+  "salary": "$80,000 to $90,000 CAD for intermediate roles, more in high-cost markets",
+  "eeo": "decline"
+}

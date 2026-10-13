@@ -1,0 +1,25 @@
+<!doctype html><html><body>
+<h1>Senior Full-Stack Engineer at Testco</h1>
+<p>Location: Toronto, ON. We build logistics software with React, TypeScript and Postgres.</p>
+<form onsubmit="event.preventDefault(); document.body.innerHTML='<h1>Thank you for applying!</h1>'">
+  <label for="fn">First Name *</label><input id="fn" required>
+  <label for="ln">Last Name *</label><input id="ln" required>
+  <label for="em">Email *</label><input id="em" type="email" required>
+  <label for="ph">Phone</label><input id="ph" type="tel">
+  <div><span>LinkedIn Profile</span><input name="li"></div>
+  <label for="cv">Resume/CV *</label><input id="cv" type="file" required>
+  <label for="auth">Are you legally authorized to work in Canada? *</label>
+  <select id="auth" required><option value="">Select...</option><option>Yes</option><option>No</option></select>
+  <fieldset><legend>Will you now or in the future require sponsorship to work in the United States?</legend>
+    <label><input type="radio" name="sp" value="y"> Yes</label><label><input type="radio" name="sp" value="n"> No</label></fieldset>
+  <label for="yrs">How many years of experience do you have with React?</label><input id="yrs" type="number">
+  <label for="why">Why do you want to work at Testco? *</label><textarea id="why" required></textarea>
+  <fieldset><legend>Gender</legend>
+    <label><input type="radio" name="g" value="m"> Male</label><label><input type="radio" name="g" value="f"> Female</label>
+    <label><input type="radio" name="g" value="d"> I don't wish to answer</label></fieldset>
+  <fieldset><legend>Race (select all that apply)</legend>
+    <label><input type="checkbox" name="race_asian"> Asian</label><label><input type="checkbox" name="race_white"> White</label>
+    <label><input type="checkbox" name="race_none"> I prefer not to answer</label></fieldset>
+  <label><input type="checkbox" id="ack" required> I acknowledge the privacy policy *</label>
+  <button type="submit">Submit Application</button>
+</form></body></html>

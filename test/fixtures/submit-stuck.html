@@ -1,0 +1,10 @@
+<!doctype html><html><body>
+<h1>Backend Engineer at Stuckco</h1>
+<!-- Rejects every submit with a required error and disables the button; nothing is wiped. -->
+<form onsubmit="event.preventDefault(); window.submits = (window.submits || 0) + 1;
+  document.getElementById('err').hidden = false; document.getElementById('go').disabled = true;">
+  <label for="fn">First Name *</label><input id="fn" required>
+  <label for="em">Email *</label><input id="em" type="email" required>
+  <div id="err" role="alert" hidden>Phone is required</div>
+  <button id="go" type="submit">Submit Application</button>
+</form></body></html>

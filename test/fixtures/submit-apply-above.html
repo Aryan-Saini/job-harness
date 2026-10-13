@@ -1,0 +1,12 @@
+<!doctype html><html><body>
+<!-- Greenhouse's job board: the posting's "Apply" button sits above the form and only jumps to it. -->
+<h1>Backend Engineer at Aboveco</h1>
+<button type="button" onclick="document.getElementById('fn').focus()">Apply</button>
+<p>About the role.</p>
+<form onsubmit="event.preventDefault(); window.submits = (window.submits || 0) + 1;
+  document.body.innerHTML = '<h1>Thank you for applying.</h1>';">
+  <label for="fn">First Name *</label><input id="fn" required>
+  <label for="em">Email *</label><input id="em" type="email" required>
+  <label for="cv">Resume</label><input id="cv" type="file">
+  <button type="submit">Submit application</button>
+</form></body></html>
