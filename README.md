@@ -10,14 +10,12 @@ edges and sites it chokes on. It's an okay starting spot, though. Issues and PRs
 
 ## Setup
 
-You need Node 24+, pnpm, and either [Claude Code](https://claude.com/claude-code) (`claude`) or
+You need Node 24+ and either [Claude Code](https://claude.com/claude-code) (`claude`) or
 [Codex](https://github.com/openai/codex) (`codex`), logged in. `pdftotext` (poppler) is only
 needed for the fit check.
 
 ```bash
-git clone https://github.com/Aryan-Saini/job-harness && cd job-harness
-pnpm install
-ln -s "$PWD/bin/jh" ~/.local/bin/jh      # or anywhere on your PATH
+npm install -g job-harness
 jh init
 ```
 
@@ -35,7 +33,7 @@ jh init
 5. Run `jh open` and log in to LinkedIn once. The harness keeps its own Chrome profile, so the
    login sticks.
 
-If you don't have Chrome installed, run `pnpm exec playwright install chromium`.
+If you don't have Chrome installed, run `npx playwright install chromium`.
 
 ## Use
 
@@ -114,6 +112,14 @@ else. To add a key, put it in `~/.jh/typesafe.key` or set `TYPESAFE_API_KEY`.
   text, so keep that folder private.
 - Captchas, 2FA and email verification stop and wait for you.
 - Read a site's terms before running `--submit auto` against it.
+
+## Development
+
+```bash
+git clone https://github.com/Aryan-Saini/job-harness && cd job-harness
+pnpm install
+pnpm jh <command>  # run from source
+```
 
 ## Tests
 

@@ -2,15 +2,33 @@
   "name": "job-harness",
   "version": "0.1.0",
   "description": "Fills job applications on any site with your Claude or Codex subscription, and stops at Submit so you can check it.",
-  "private": true,
   "type": "module",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Aryan-Saini/job-harness.git"
+  },
+  "homepage": "https://github.com/Aryan-Saini/job-harness#readme",
+  "keywords": [
+    "job",
+    "applications",
+    "automation",
+    "cli",
+    "claude",
+    "codex",
+    "playwright"
+  ],
   "engines": {
     "node": ">=24"
   },
   "bin": {
-    "jh": "./bin/jh"
+    "jh": "./bin/jh.js"
   },
+  "files": [
+    "bin",
+    "src",
+    "templates"
+  ],
   "scripts": {
     "jh": "tsx src/cli.ts",
     "typecheck": "tsc --noEmit",
@@ -20,11 +38,11 @@
     "@typesafe-ai/sdk": "^0.6.0",
     "patchright-core": "1.63.0",
     "playwright": "^1.64.0",
+    "tsx": "^4.23.15",
     "zod": "^4.6.5"
   },
   "devDependencies": {
     "@types/node": "^26.6.4",
-    "tsx": "^4.23.15",
     "typescript": "^7.0.2",
     "vitest": "^5.0.3"
   }
