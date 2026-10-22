@@ -126,7 +126,15 @@ export const EXTRACT = String.raw`(([rootSelector, prefix]) => {
       // Custom-styled radios hide the input; the group counts if its labels are visible.
       const shown = group.filter((g) => visible(g) || (g.labels && [...g.labels].some(visible)));
       if (!shown.length) continue;
-      const optionLabels = group.map((g) => ownLabel(g) || g.value);
+      // LinkedIn's Easy Apply leaves each radio's <label> empty and puts "Yes" in a <p> beside
+      // it, so an unlabeled option takes the text of its biggest wrapper holding no other option.
+      const optionText = (g) => {
+        if (group.length < 2) return "";
+        let box = g;
+        while (box.parentElement && !group.some((o) => o !== g && box.parentElement.contains(o))) box = box.parentElement;
+        return box === g ? "" : clean(box.innerText);
+      };
+      const optionLabels = group.map((g) => ownLabel(g) || optionText(g) || g.value);
       const optionIds = group.map(tagOf);
       // Single checkbox ("I agree", "Follow company"): its own label is the question.
       if (type === "checkbox" && group.length === 1) {

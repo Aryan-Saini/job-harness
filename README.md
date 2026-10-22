@@ -10,6 +10,8 @@ edges and sites it chokes on. It's an okay starting spot, though. Issues and PRs
 
 ## Setup
 
+[SETUP.md](SETUP.md) has the full walkthrough and answers to common questions. The short version:
+
 You need Node 24+ and either [Claude Code](https://claude.com/claude-code) (`claude`) or
 [Codex](https://github.com/openai/codex) (`codex`), logged in. `pdftotext` (poppler) is only
 needed for the fit check.
@@ -86,6 +88,17 @@ jh set submit auto # then `jh run` applies on its own, up to maxPerDay
 ```
 
 `jh settings` lists every toggle.
+
+### Database
+
+`jh sql` runs one statement from stdin against `~/.jh/jh.db` and prints a table. It's read-only
+unless you pass `--write` (`--json` for raw rows):
+
+```bash
+jh sql <<'SQL'
+select date, status, company, title from applications order by date desc limit 20
+SQL
+```
 
 ## Models
 

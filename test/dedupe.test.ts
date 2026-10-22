@@ -41,6 +41,7 @@ describe("similar roles", () => {
     expect(similarTitle("Software Engineer, Full Stack (Remote)", "Software Engineer - Full Stack")).toBe(true);
     expect(similarTitle("Software Engineer II", "Senior Software Engineer")).toBe(false);
     expect(similarTitle("Frontend Engineer", "Backend Engineer")).toBe(false);
+    expect(similarTitle("Support Engineer (AMER)", "Support Engineer (AMER - Weekends)")).toBe(false);
   });
 });
 

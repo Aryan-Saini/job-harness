@@ -49,6 +49,15 @@ describe("extractFields", () => {
     expect(await page.locator("input[name=sp][value=y]").isChecked()).toBe(true);
     await page.close();
   });
+  it("reads LinkedIn's radios, whose labels are empty and whose question sits above the fieldset", async () => {
+    const page = await browser.newPage();
+    await page.goto(fixture("linkedin-radio.html"));
+    const [field] = await extractFields(page);
+    expect(field).toMatchObject({ kind: "radio", label: "Are you currently legally eligible to work in Canada?*", options: ["Yes", "No"], required: true });
+    expect(await fillField(page, field!, { value: "Yes", values: [] }, "")).toBeUndefined();
+    expect(await page.locator("#r1").isChecked()).toBe(true);
+    await page.close();
+  });
 });
 
 describe("menu-button selects", () => {

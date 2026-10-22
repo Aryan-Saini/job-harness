@@ -88,6 +88,25 @@ export function exec(...statements: [string, Param[]][]) {
   }
 }
 
+/**
+ * One statement typed by a person or an agent (`jh sql`): read-only unless `write`, enforced by
+ * SQLite itself (PRAGMA query_only), not by guessing at the SQL. One statement only, since the
+ * driver would silently ignore the rest.
+ */
+export function query(sql: string, { write = false } = {}): Row[] {
+  // Literals and comments can hold semicolons; what's left can't, unless there's a second statement.
+  const bare = sql.replace(/'(?:[^']|'')*'|"(?:[^"]|"")*"|--[^\n]*|\/\*[\s\S]*?\*\//g, (m) => (m.startsWith("-") || m.startsWith("/") ? " " : "''")).trim().replace(/;\s*$/, "");
+  if (!bare) throw new Error("No SQL given");
+  if (bare.includes(";")) throw new Error("One statement at a time");
+  const d = open();
+  d.exec(`PRAGMA query_only=${write ? 0 : 1}`);
+  try {
+    return d.prepare(sql.trim().replace(/;\s*$/, "")).all() as Row[];
+  } finally {
+    d.exec("PRAGMA query_only=0");
+  }
+}
+
 /** Small JSON values that don't deserve a table (LinkedIn resume uploads). */
 export function kvGet<T>(key: string): T | undefined {
   const row = all<{ value: string }>("SELECT value FROM kv WHERE key = ?", key)[0];
