@@ -1,6 +1,6 @@
 # What failed in a 2,250-attempt overnight run
 
-In October 2026 crazy mode (see [modes.md](modes.md#crazy-mode), coming soon) ran overnight:
+In October 2026 crazy mode (see [modes.md](modes.md#crazy-mode) and [crazy/README.md](../crazy/README.md)) ran overnight:
 many AI agents filling and submitting real applications in parallel, each checked by a stronger
 model before Submit. It made 2,250 attempts. This page is what that run taught, with the
 numbers. Per-site details are in [platforms/](../platforms/).

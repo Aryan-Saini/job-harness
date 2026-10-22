@@ -13,6 +13,7 @@ or you turned on auto mode yourself.
 | Runner | `jh run` / `jh run once` | Only with `submit=auto` | Finding postings for you, and applying while you're away |
 | Queue | `jh next [n]` | Only when you press `s` | Working through what the runner queued |
 | Fit check | `jh fit <url>` | Never, fills nothing | Asking "is this worth it?" before you spend a form on it |
+| Crazy mode | `node crazy/crazy.mjs <minutes>` | Yes, after a checker model passes it | Volume: many agents working the whole queue at once |
 
 ## How a single application goes
 
@@ -184,6 +185,44 @@ withdrawn. `jh sql` is read-only unless you pass `--write`.
   `--remote-debugging-port`. The harness opens its own tab and closes only that tab.
 - `jh open [url]`: open the harness's browser to log in somewhere by hand.
 
+## Crazy mode
+
+Many AI agents applying in parallel, for when you want volume and accept less control. It works
+in lanes: each lane has one strong checker model and a few cheap filler models.
+
+1. A filler opens a job in its own tab of one shared Chrome, fills the form, and stops before
+   Submit. It writes a card (every question and answer) and a screenshot.
+2. The lane's checker reads the card and the screenshot against your `context.md` and passes
+   it, sends back one round of fixes, or drops it.
+3. On a pass, the filler clicks Submit and reports what the confirmation page said.
+
+Around that loop:
+
+- Every model call has a cost or time cap, so one bad job can't burn your subscription.
+- Before every job it checks how much of your subscription's usage window is left, and stops
+  claiming jobs near the limit.
+- An auditor reviews every failed job: it records ones that actually went in, retries once with
+  specific instructions, and files questions only you can answer as pending questions.
+- An hourly fixer turns repeated failures into short per-site tips in a playbook the fillers
+  read before each job. The tips in [platforms/](../platforms/) came from it.
+- Failures caused by the machinery (an agent that crashed in seconds, a usage limit, the
+  browser down) are retried, not recorded as the job failing. A site saying "not today" (the
+  LinkedIn daily Easy Apply limit) pauses that source until it resets.
+
+Crazy mode submits on its own. There is no review step by you, only the checker. Before you run
+it, make sure review mode (`jh next`) fills forms the way you want, read
+[failures.md](failures.md), and start small with a submission target
+(`node crazy/crazy.mjs 60 5`). Setup, settings and how to stop it are in
+[crazy/README.md](../crazy/README.md).
+
+### Tab API
+
+`crazy/tabapi.cjs`, the small HTTP server crazy mode drives Chrome with: each agent gets its own named tab in one
+shared Chrome, and calls actions like `open`, `fields` (every form control with its label,
+value and a selector), `fill`, `type`, `click`, `select`, `check`, `upload`, `eval`, `shot` and
+`close`. It listens on localhost only by default, and refuses a final-submit click, Enter outside a
+textarea and scripted clicks until crazy mode's submit step arms the tab.
+
 ## Coming soon
 
 These run in the author's own setup and aren't in this repo yet. They'll land here as they're
@@ -217,40 +256,6 @@ An Expo app for the same things on your phone: the swipe deck, the queue, applic
 and settings, plus push notifications when cards are waiting. It talks to the dashboard's API,
 so it needs the dashboard running somewhere your phone can reach privately. It isn't in an app
 store.
-
-### Crazy mode
-
-Many AI agents applying in parallel, for when you want volume and accept less control. It works
-in lanes: each lane has one strong checker model and a few cheap filler models.
-
-1. A filler opens a job in its own tab of one shared Chrome, fills the form, and stops before
-   Submit. It writes a card (every question and answer) and a screenshot.
-2. The lane's checker reads the card and the screenshot against your `context.md` and passes
-   it, sends back one round of fixes, or drops it.
-3. On a pass, the filler clicks Submit and reports what the confirmation page said.
-
-Around that loop:
-
-- Every model call has a cost or time cap, so one bad job can't burn your subscription.
-- Before every job it checks how much of your subscription's usage window is left, and stops
-  claiming jobs near the limit.
-- An auditor reviews every failed job: it records ones that actually went in, retries once with
-  specific instructions, and files questions only you can answer as pending questions.
-- An hourly fixer turns repeated failures into short per-site tips in a playbook the fillers
-  read before each job. The tips in [platforms/](../platforms/) came from it.
-- Failures caused by the machinery (an agent that crashed in seconds, a usage limit, the
-  browser down) are retried, not recorded as the job failing. A site saying "not today" (the
-  LinkedIn daily Easy Apply limit) pauses that source until it resets.
-
-Crazy mode submits on its own. There is no review step by you, only the checker. Run it in dry
-mode first, and read [failures.md](failures.md) before you run it at all.
-
-### Tab API
-
-The small HTTP server crazy mode drives Chrome with: each agent gets its own named tab in one
-shared Chrome, and calls actions like `open`, `fields` (every form control with its label,
-value and a selector), `fill`, `type`, `click`, `select`, `check`, `upload`, `eval`, `shot` and
-`close`. It listens on localhost only by default.
 
 ### Mail
 
