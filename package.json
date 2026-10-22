@@ -27,7 +27,8 @@
   "files": [
     "bin",
     "src",
-    "templates"
+    "templates",
+    "crazy"
   ],
   "scripts": {
     "jh": "tsx src/cli.ts",
