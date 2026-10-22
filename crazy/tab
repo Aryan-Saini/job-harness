@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# tab: the client for tabapi.cjs (crazy mode's Chrome tabs on :9777), without hand-escaping JSON
+# inside shell inside JS.
+#
+#   tab list                      open tab names
+#   tab <tab> <action> [json]     tab j01 click '{"role":"button","name":"Apply"}'
+#   tab <tab> fields              every form control: label, name, id, type, required, value, selector
+#   tab <tab> <action> - <<'J'    JSON body from stdin, for values with quotes or apostrophes
+#   {"label":"Why us?","value":"I'm drawn to \"real\" logistics problems."}
+#   J
+#   tab <tab> eval <<'JS'         page JS from stdin, sent as {"js": ...}; write it as-is
+#   [...document.querySelectorAll("iframe")].map(f => f.src)
+#   JS
+#
+# Actions: open {url} | aria | text | fields | click {role,name}|{selector}|{label} | fill {label|selector,value}
+#   | type {label|selector,value} | press {key} | select {label|selector,value} | check {label|selector}
+#   | upload {selector?,path} | eval {js} | shot {path} | close. Paths (upload, shot) are on the machine running tabapi.
+#
+# Host: TABAPI_HOST (default 127.0.0.1), port TABAPI_PORT (default 9777).
+# Prints the API's reply. Exits non-zero when the API replied with an ERROR.
+set -euo pipefail
+usage="usage: tab list | tab <tab> <action> [json | -]   (eval reads JS from stdin)"
+
+host=${TABAPI_HOST:-127.0.0.1}
+case $host in *:*) host="[$host]" ;; esac
+base="http://$host:${TABAPI_PORT:-9777}"
+
+if [ "${1:-}" = list ]; then
+  curl -sS --fail-with-body -m 10 "$base/"; echo; exit
+fi
+name=${1:?$usage}
+action=${2:?$usage}
+
+if [ "${3:-}" = "-" ]; then
+  body=$(cat)
+elif [ $# -ge 3 ]; then
+  body=$3
+elif [ "$action" = eval ]; then
+  body=$(python3 -c 'import json,sys; print(json.dumps({"js": sys.stdin.read()}))')
+else
+  body='{}'
+fi
+
+rc=0
+printf '%s' "$body" | curl -sS --fail-with-body -m "${TABAPI_TIMEOUT:-120}" -XPOST --data-binary @- \
+  "$base/$name/$action" || rc=$?
+echo
+exit "$rc"
