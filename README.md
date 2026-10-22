@@ -1,130 +1,56 @@
 # jh
 
-A CLI that fills out job applications for you. It works on LinkedIn Easy Apply, Greenhouse,
-Lever, Ashby, Workday and plain company forms. Model calls run through the Claude Code or Codex
-CLI you're already logged into, so you don't need an API key. By default it stops at the Submit
-button so you can check every answer before anything goes out.
+A CLI that fills out job applications for you. Model calls run through the Claude Code or Codex
+CLI you're already logged into, so you don't need an API key. It works on LinkedIn Easy Apply,
+Greenhouse, Lever, Ashby, Workday and plain company forms.
+
+By default it stops at the Submit button so you can check every answer. It only submits on its
+own when you tell it to (`--submit auto`).
 
 Heads up: this is kind of janky. I pulled it out of my own job hunt setup, so expect rough
 edges and sites it chokes on. It's an okay starting spot, though. Issues and PRs are welcome.
 
-## Setup
+## Quick start
 
-[SETUP.md](SETUP.md) has the full walkthrough and answers to common questions. The short version:
-
-You need Node 24+ and either [Claude Code](https://claude.com/claude-code) (`claude`) or
-[Codex](https://github.com/openai/codex) (`codex`), logged in. `pdftotext` (poppler) is only
-needed for the fit check.
+You need Node 24+ and [Claude Code](https://claude.com/claude-code) (`claude`) or
+[Codex](https://github.com/openai/codex) (`codex`), logged in.
 
 ```bash
-npm install -g job-harness
-jh init
+npm install -g job-harness            # 1. install
+jh init                               # 2. creates ~/.jh; fill in profile.json, context.md, resumes/
+jh apply <job url> --submit dry       # 3. fill a real form without submitting, then look at it
 ```
 
-`jh init` creates `~/.jh` and tells you what's still missing. Then:
+When the dry run looks right, drop `--submit dry`. It fills the form, stops at Submit and asks
+you `[s]ubmit / [r]escan / [q]uit`.
 
-1. Fill in `~/.jh/profile.json`. Name, contact info, address, education, which countries you
-   can work in, salary, and EEO answers (or `"decline"`). Every form reads this file.
-2. Write `~/.jh/context.md`. This is everything else: your experience, projects, target roles,
-   answers you reuse, how you write. Anything you leave out of it won't be made up. The field
-   stays empty for you to fill.
-3. Put your resume in `~/.jh/resumes/resume.pdf`. You can add more PDFs and pick one per run
-   with `--resume <name>`.
-4. Run `jh login default` to set the email and password it uses when a site makes you create
-   an account.
-5. Run `jh open` and log in to LinkedIn once. The harness keeps its own Chrome profile, so the
-   login sticks.
+## Docs
 
-If you don't have Chrome installed, run `npx playwright install chromium`.
+- [SETUP.md](SETUP.md): step by step from nothing to your first application, plus troubleshooting
+- [docs/modes.md](docs/modes.md): every way to run it (single apply, batch, the runner, review
+  and dry runs) and what each one does before it submits
+- [docs/context.md](docs/context.md): how to write `context.md`, the file every free-text answer
+  comes from
+- [platforms/](platforms/): per-site notes for Greenhouse, Workday, Ashby, Lever, LinkedIn and
+  others, with success rates and known failures
+- [docs/failures.md](docs/failures.md): what went wrong in a 2,250-attempt overnight run
+- [AGENTS.md](AGENTS.md): for coding agents working on this repo
 
-## Use
+## Commands
 
 ```bash
 jh apply <url>                  # fill it, stop at Submit, ask you
 jh apply <url> --submit dry     # fill only, never submit
-jh apply <url> --submit auto    # submit if every required field got filled
+jh apply <url> --submit auto    # submit if every required field got filled and the review passed
 jh batch urls.txt               # one URL per line
+jh questions && jh answer       # questions it couldn't answer; each answer is reused after
+jh tracker                      # every application, newest first
+jh run                          # find postings, fit-check, queue (and apply, in auto mode)
+jh settings                     # every toggle
 ```
 
-Each field gets its answer from the cheapest source that has one:
-
-- **rule**: `profile.json` covers name, email, phone, links, address, school and start date
-- **bank**: questions you've answered before
-- **jev**: picks options and matches reworded questions (optional, see below)
-- **model**: anything else goes out in one batched call that includes your `context.md` and the
-  job description. Short answers use the `fill` model and free text ("Why us?") uses `write`
-
-Before it submits, a `review` model checks every answer against your facts and blocks the
-submit if something's wrong. Every run saves screenshots, the HTML of each page and an
-`answers.md` to `~/.jh/runs/`.
-
-### Questions it couldn't answer
-
-```bash
-jh questions        # what's waiting on you
-jh answer           # answer them one at a time; each answer gets reused on every later form
-jh answers react    # search the answer bank
-```
-
-When you edit an answer in the browser before submitting, your version goes into the bank.
-
-### Tracker
-
-```bash
-jh tracker                     # every application, newest first
-jh show acme                   # one application with every question and answer
-jh status acme interviewing    # update it
-```
-
-### Leave it running
-
-```bash
-jh set searches "software engineer | backend engineer"
-jh set locations "Canada | Remote"
-jh run once        # find new LinkedIn postings, fit-check them, queue the good ones
-jh queue           # what got queued, best fit first
-jh next 5          # apply to the top 5, stopping at Submit on each one
-jh set submit auto # then `jh run` applies on its own, up to maxPerDay
-```
-
-`jh settings` lists every toggle.
-
-### Database
-
-`jh sql` runs one statement from stdin against `~/.jh/jh.db` and prints a table. It's read-only
-unless you pass `--write` (`--json` for raw rows):
-
-```bash
-jh sql <<'SQL'
-select date, status, company, title from applications order by date desc limit 20
-SQL
-```
-
-## Models
-
-The defaults are in `src/config.ts`: `fill` is `claude:haiku`, and `write` and `review` are
-`claude:sonnet`. You can override them per run:
-
-```bash
-jh apply <url> --model fill=codex:gpt-6.1-sol:low --model write=claude:opus
-```
-
-A spec looks like `<claude|codex|opencode>:<model>[:<effort>]`. `jh usage` shows tokens per
-model and per application.
-
-## Jev (optional)
-
-[Jev](https://typesafe.ai) answers typed questions in about a second. With a key, the harness
-uses it for the fit check (`jh fit <url>` gives APPLY / MAYBE / SKIP), for option picking and
-for bank matching. Without one, the fit check is skipped and the fill model does everything
-else. To add a key, put it in `~/.jh/typesafe.key` or set `TYPESAFE_API_KEY`.
-
-## Notes
-
-- Everything lives in `~/.jh` (`JH_HOME` moves it). Site passwords sit in the database in plain
-  text, so keep that folder private.
-- Captchas, 2FA and email verification stop and wait for you.
-- Read a site's terms before running `--submit auto` against it.
+`jh` with no arguments prints every command. Once a day `jh` checks npm for a newer version and
+prints one line if there is one. `JH_NO_UPDATE_CHECK=1` turns that off.
 
 ## Development
 
@@ -132,12 +58,7 @@ else. To add a key, put it in `~/.jh/typesafe.key` or set `TYPESAFE_API_KEY`.
 git clone https://github.com/Aryan-Saini/job-harness && cd job-harness
 pnpm install
 pnpm jh <command>  # run from source
-```
-
-## Tests
-
-```bash
-pnpm test         # unit tests plus browser tests against local fixtures, no model calls
+pnpm test          # unit tests plus browser tests against local fixtures, no model calls
 pnpm typecheck
 ```
 
