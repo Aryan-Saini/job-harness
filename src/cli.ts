@@ -23,6 +23,7 @@ import { findFitChecks, labelFitCheck, loadFitChecks } from "./fitlog.ts";
 import { disableJev } from "./jev.ts";
 import * as linkedin from "./linkedin.ts";
 import { listSites, loadSite, siteKey } from "./sites.ts";
+import { updateCheck } from "./update.ts";
 
 const HELP = `jh: job application harness
 
@@ -90,6 +91,7 @@ const { values: flags, positionals } = parseArgs({
 const [command, ...args] = positionals;
 
 async function main() {
+  updateCheck();
   for (const m of flags.model) {
     const [role, spec] = m.split("=");
     if (!role || !spec || !(role in models)) throw new Error(`--model wants role=spec, roles: ${Object.keys(models).join(", ")}`);
