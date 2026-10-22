@@ -3,6 +3,7 @@ import { createInterface } from "node:readline/promises";
 import { chromium as patchright } from "patchright-core";
 import { chromium, type BrowserContext, type Page } from "playwright";
 import { paths } from "./config.ts";
+import { onShutdown } from "./shutdown.ts";
 
 export type BrowserOpts = {
   /** No window. Anything that needs a human fails instead of pausing. */
@@ -33,7 +34,10 @@ export async function openBrowser(opts: BrowserOpts): Promise<{ context: Browser
   });
   const page = context.pages()[0] ?? (await context.newPage());
   let done: Promise<void> | undefined;
-  return { context, page, close: () => (done ??= context.close().catch(() => {})) };
+  const close = () =>
+    (done ??= context.close().catch(() => {}).finally(() => forget()));
+  const forget = onShutdown(close);
+  return { context, page, close };
 }
 
 /**
@@ -59,16 +63,16 @@ async function attach(endpoint: string): Promise<{ context: BrowserContext; page
   };
   context.on("page", adopt);
   let done: Promise<void> | undefined;
-  return {
-    context,
-    page,
-    close: () =>
-      (done ??= (async () => {
-        context.off("page", adopt);
-        for (const p of ours) await p.close().catch(() => {});
-        await browser.close();
-      })()),
-  };
+  const close = () =>
+    (done ??= (async () => {
+      forget();
+      context.off("page", adopt);
+      for (const p of ours) await p.close().catch(() => {});
+      await browser.close();
+    })());
+  // A stopping runner closes its tabs, not the Chrome it attached to.
+  const forget = onShutdown(close);
+  return { context, page, close };
 }
 
 let headless = false;

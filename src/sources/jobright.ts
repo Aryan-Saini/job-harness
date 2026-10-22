@@ -76,7 +76,9 @@ export async function jobrightPostings(headless = true, cdp?: string): Promise<P
   });
   try {
     await page.goto(RECOMMEND, { waitUntil: "domcontentloaded", timeout: 45_000 });
-    await page.waitForTimeout(5000);
+    // The feed request goes out after ~30 others (about 10s in), so wait for it, not a fixed delay.
+    await page.waitForResponse((res) => FEEDS.test(res.url()), { timeout: 25_000 }).catch(() => undefined);
+    await page.waitForTimeout(1500);
     if (!/login|sign-?in|signup/i.test(page.url()) && found.size) {
       for (let i = 0; i < SCROLLS; i++) {
         // The list scrolls inside its own container, so scroll every scrollable element.

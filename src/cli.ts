@@ -12,7 +12,9 @@ import { listPending, resolvePending, type Pending } from "./pending.ts";
 import { EEO } from "./planner.ts";
 import { profile, ruleAnswer } from "./profile.ts";
 import { defaultLogin, listLogins, setCred } from "./secrets.ts";
-import { all } from "./db.ts";
+import { all, query } from "./db.ts";
+import { table } from "./table.ts";
+import { exitOnSignals } from "./shutdown.ts";
 import { checkFit, verdictFrom } from "./fit.ts";
 import { claimNext, markQueued, runForever, runOnce, type QueueRow } from "./runner.ts";
 import { DEFAULTS, resetSetting, setSetting, settings, type SettingKey } from "./settings.ts";
@@ -47,6 +49,8 @@ const HELP = `jh: job application harness
   jh next [n]                  Apply to the best queued job(s) in review mode
   jh settings [json]           Every toggle: submit mode, fit check, sources, searches...
   jh set <key> <value>         Change one, jh reset <key> to undo
+  jh sql [--write] [--json] [--wide] < query.sql   One SQL statement from stdin against the
+                               database. Read-only unless --write
 
   jh tracker [status|words]    Every application: status, company, role, resume, fit
   jh show <id|words>           One application in full: answers, fit, notes, history
@@ -76,6 +80,9 @@ const { values: flags, positionals } = parseArgs({
     fit: { type: "boolean" },
     days: { type: "string" },
     jev: { type: "boolean" },
+    write: { type: "boolean", default: false },
+    json: { type: "boolean", default: false },
+    wide: { type: "boolean", default: false },
     help: { type: "boolean", short: "h", default: false },
   },
 });
@@ -294,6 +301,8 @@ async function main() {
       // The unattended loop: find postings, fit-check, queue; in auto mode also apply.
       // No --submit: follow the live toggle, so `jh set submit review` stops an auto runner.
       const opts = { submit: flags.submit ? submit : undefined, headless: flags.headless, cdp: flags.cdp };
+      // Ctrl-C or a service stop: close the browser, kill model CLIs, exit in seconds.
+      exitOnSignals();
       if (args.includes("once")) console.log(await runOnce(opts));
       else await runForever(opts);
       return;
@@ -346,6 +355,13 @@ async function main() {
       if (!args[0]) throw new Error("jh reset <key>");
       resetSetting(args[0]);
       console.log(`${args[0]} back to default`);
+      return;
+    }
+    case "sql": {
+      // SQL comes on stdin (a quoted heredoc), so no shell quoting ever touches it.
+      if (process.stdin.isTTY) throw new Error("jh sql reads SQL from stdin: jh sql <<'SQL'\nselect status, count(*) from job_queue group by status\nSQL");
+      const rows = query(readFileSync(0, "utf8"), { write: flags.write });
+      console.log(flags.json ? JSON.stringify(rows, null, 1) : table(rows, flags.wide ? 0 : 60));
       return;
     }
     case "tracker": {

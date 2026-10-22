@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { trackChild } from "./shutdown.ts";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -139,6 +140,7 @@ const RUN_TIMEOUT_MS = 10 * 60_000;
 function run(cmd: string, args: string[], stdin: string, cwd: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const child = spawn(cmd, args, { cwd, stdio: ["pipe", "pipe", "pipe"], timeout: RUN_TIMEOUT_MS, killSignal: "SIGKILL" });
+    trackChild(child);
     let stdout = "";
     let stderr = "";
     child.stdout.on("data", (d) => (stdout += d));

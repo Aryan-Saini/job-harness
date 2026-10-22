@@ -65,14 +65,15 @@ export function sameCompany(a: string, b: string): boolean {
 }
 
 /**
- * Titles that name the same role: word overlap (Jaccard) of at least 0.75 after dropping
- * filler and locations. "Software Engineer II" vs "Senior Software Engineer" is 0.5, so a
- * different level stays a different job.
+ * Titles that name the same role: word overlap (Jaccard) above 0.75 after dropping filler and
+ * locations. "Software Engineer II" vs "Senior Software Engineer" is 0.5, so a different level
+ * stays a different job; one extra word on a three-word title ("Support Engineer (AMER - Weekends)")
+ * is exactly 0.75, so that stays a different posting too.
  */
 export function similarTitle(a: string, b: string): boolean {
   const x = words(a);
   const y = words(b);
   if (!x.size || !y.size) return false;
   const shared = [...x].filter((w) => y.has(w)).length;
-  return shared / (x.size + y.size - shared) >= 0.75;
+  return shared / (x.size + y.size - shared) > 0.75;
 }
